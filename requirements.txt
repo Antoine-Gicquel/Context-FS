@@ -1,1 +1,2 @@
 fusepy
+pyfuse3

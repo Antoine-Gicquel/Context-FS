@@ -4,6 +4,8 @@ Easily add context to your wordlists !
 ## Installation
 
 ```
+sudo apt install libfuse-dev
+sudo apt install pkg-config libfuse3-dev
 pipx install git+https://github.com/Antoine-Gicquel/Context-FS.git
 ```
 
