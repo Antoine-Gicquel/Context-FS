@@ -41,15 +41,17 @@ class CtxFS(Operations):
 			return os.listdir(os.path.join(self.origin, p))
 		raise FuseOSError(ENOENT)
 
-	def read_wrapped_file(self, path):
+	def read_wrapped_file(self, path, size, offset, fh):
 		if path.startswith(self.wrapped_folder + "/"):
 			p = path[len(self.wrapped_folder + "/"):]
 			c = b'\n'.join(self.global_context)
 			if len(c) > 0:
 				c += b'\n'
+			if size + offset <= len(c):
+				return c[offset:offset+size]
 			with open(os.path.join(self.origin, p), 'rb') as f:
-				c += f.read()
-			return c
+				c += f.read(offset + size - len(c))
+			return c[offset:offset+size]
 		raise FuseOSError(ENOENT)
 
 	def get_wrapped_file_size(self, path):
@@ -85,10 +87,10 @@ class CtxFS(Operations):
 		if path == self.global_context_file:
 			context_string = b"\n".join(self.global_context)
 			if len(context_string) > 0:
-				context_string += b'\nzeub\n'
-			return context_string
+				context_string += b"\n"
+			return context_string[offset:offset+size]
 		if self.is_wrapped_file(path):
-			return self.read_wrapped_file(path)
+			return self.read_wrapped_file(path, size, offset, fh)
 		raise FuseOSError(ENOENT)
 
 	def write(self, path, data, offset, fh):
